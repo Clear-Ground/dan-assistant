@@ -196,5 +196,15 @@ def chat(username):
     return jsonify({"response": answer})
 
 
+import os
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=PORT)
+    print("HYBRID ASSISTANT CLOUD v7 ACTIVE")
+
+    port = int(os.environ.get("PORT", 5001))
+
+    app.run(
+        host="0.0.0.0",
+        port=port,
+        debug=False
+    )
