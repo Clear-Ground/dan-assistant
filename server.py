@@ -4,13 +4,10 @@ import os
 
 app = Flask(__name__, static_folder=".", static_url_path="")
 
-# -----------------------------
-# CONFIG
-# -----------------------------
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
-MODEL = "mistralai/mistral-7b-instruct"  # Stable + inexpensive
+MODEL = "mistralai/mistral-7b-instruct"
 
 # -----------------------------
 # HEALTH CHECK
@@ -27,7 +24,7 @@ def index():
     return send_from_directory(".", "index.html")
 
 # -----------------------------
-# SAFETY FILTER
+# BASIC SAFETY FILTER
 # -----------------------------
 def is_blocked(message):
     blocked_terms = [
@@ -66,7 +63,9 @@ def chat():
     try:
         headers = {
             "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://danassistant.up.railway.app",
+            "X-Title": "Dan Assistant"
         }
 
         payload = {
@@ -84,12 +83,19 @@ def chat():
         }
 
         response = requests.post(OPENROUTER_URL, headers=headers, json=payload)
+
         result = response.json()
+
+        # Debug safeguard
+        if "error" in result:
+            return jsonify({
+                "response": f"OpenRouter Error: {result['error']}"
+            })
 
         if "choices" not in result:
             return jsonify({
-                "response": "Model response error."
-            }), 500
+                "response": f"Unexpected response: {result}"
+            })
 
         assistant_reply = result["choices"][0]["message"]["content"]
 
@@ -97,12 +103,9 @@ def chat():
 
     except Exception as e:
         return jsonify({
-            "response": "Server error occurred."
+            "response": f"Server error: {str(e)}"
         }), 500
 
 
-# -----------------------------
-# LOCAL RUN (not used in Railway)
-# -----------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
