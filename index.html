@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Private Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 700px;
+            margin: 40px auto;
+        }
+        #chat {
+            border: 1px solid #ccc;
+            padding: 15px;
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+        .user { color: blue; }
+        .assistant { color: black; }
+        input {
+            width: 80%;
+            padding: 8px;
+        }
+        button {
+            padding: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Private Offline Assistant</h2>
+
+<div id="chat"></div>
+
+<input type="text" id="message" placeholder="Type your message..." />
+<button onclick="sendMessage()">Send</button>
+
+<script>
+const username = "dan";
+
+async function sendMessage() {
+    const messageInput = document.getElementById("message");
+    const chat = document.getElementById("chat");
+    const message = messageInput.value;
+
+    if (!message) return;
+
+    chat.innerHTML += `<div class="user"><strong>You:</strong> ${message}</div>`;
+    messageInput.value = "";
+
+    const response = await fetch(`http://127.0.0.1:5001/chat/${username}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ message: message })
+    });
+
+    const data = await response.json();
+
+    chat.innerHTML += `<div class="assistant"><strong>Assistant:</strong> ${data.response}</div>`;
+    chat.scrollTop = chat.scrollHeight;
+}
+</script>
+
+</body>
+</html>
