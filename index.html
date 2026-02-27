@@ -1,65 +1,103 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Private Assistant</title>
+    <title>Dan Assistant</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 700px;
-            margin: 40px auto;
+            background: #111827;
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
         }
-        #chat {
-            border: 1px solid #ccc;
-            padding: 15px;
-            height: 400px;
-            overflow-y: auto;
-            margin-bottom: 10px;
+        h1 {
+            margin-bottom: 5px;
         }
-        .user { color: blue; }
-        .assistant { color: black; }
+        .box {
+            margin-top: 30px;
+            background: #1f2937;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
         input {
-            width: 80%;
-            padding: 8px;
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            border: none;
+            font-size: 16px;
         }
         button {
-            padding: 8px;
+            margin-top: 15px;
+            padding: 12px 20px;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #response {
+            margin-top: 20px;
+            text-align: left;
+            white-space: pre-wrap;
+            min-height: 40px;
+        }
+        .loading {
+            opacity: 0.6;
         }
     </style>
 </head>
 <body>
 
-<h2>Private Offline Assistant</h2>
+<h1>Dan Assistant Cloud</h1>
+<p>Unlimited • Structured • Private</p>
 
-<div id="chat"></div>
-
-<input type="text" id="message" placeholder="Type your message..." />
-<button onclick="sendMessage()">Send</button>
+<div class="box">
+    <input id="message" placeholder="Ask something..." />
+    <button onclick="sendMessage()">Send</button>
+    <div id="response"></div>
+</div>
 
 <script>
-const username = "dan";
-
 async function sendMessage() {
-    const messageInput = document.getElementById("message");
-    const chat = document.getElementById("chat");
-    const message = messageInput.value;
+    const input = document.getElementById("message");
+    const responseDiv = document.getElementById("response");
 
+    const message = input.value.trim();
     if (!message) return;
 
-    chat.innerHTML += `<div class="user"><strong>You:</strong> ${message}</div>`;
-    messageInput.value = "";
+    responseDiv.innerText = "Thinking...";
+    responseDiv.classList.add("loading");
 
-    const response = await fetch(`http://127.0.0.1:5001/chat/${username}`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ message: message })
-    });
+    try {
+        const res = await fetch("/chat/dan", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: message })
+        });
 
-    const data = await response.json();
+        const data = await res.json();
 
-    chat.innerHTML += `<div class="assistant"><strong>Assistant:</strong> ${data.response}</div>`;
-    chat.scrollTop = chat.scrollHeight;
+        console.log("Server response:", data);
+
+        if (data.response) {
+            responseDiv.innerText = data.response;
+        } else if (data.error) {
+            responseDiv.innerText = "Error: " + data.error;
+        } else {
+            responseDiv.innerText = "Unexpected server response.";
+        }
+
+    } catch (err) {
+        console.error(err);
+        responseDiv.innerText = "Connection error.";
+    }
+
+    responseDiv.classList.remove("loading");
 }
 </script>
 
