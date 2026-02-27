@@ -64,7 +64,7 @@ def chat():
         headers = {
             "Authorization": f"Bearer {OPENROUTER_API_KEY}",
             "Content-Type": "application/json",
-            "HTTP-Referer": "https://danassistant.up.railway.app",
+            "HTTP-Referer": "https://dan-assistant.up.railway.app/",
             "X-Title": "Dan Assistant"
         }
 
